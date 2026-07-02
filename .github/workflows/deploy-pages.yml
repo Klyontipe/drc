@@ -3,11 +3,7 @@ name: Deploy frontend (GitHub Pages)
 on:
   push:
     branches: [main]
-    paths:
-      - 'index.html'
-      - 'public/**'
-      - 'avatars/**'
-      - '.github/workflows/deploy-pages.yml'
+  workflow_dispatch:
 
 permissions:
   contents: read
