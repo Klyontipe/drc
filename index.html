@@ -1505,7 +1505,7 @@
     <button type="button" class="sheet-logout" id="sheet-logout">Se déconnecter</button>
   </div>
 
-  <script src="config.example.js"></script>
+  <script src="config.js" onerror="window.DRC_CONFIG=window.DRC_CONFIG||{apiBase:''}"></script>
   <script>
     const API_BASE = (window.DRC_CONFIG && window.DRC_CONFIG.apiBase)
       ? window.DRC_CONFIG.apiBase.replace(/\/$/, '') : '';

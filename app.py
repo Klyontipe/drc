@@ -11,7 +11,7 @@ from functools import wraps
 from pathlib import Path
 
 from dotenv import load_dotenv
-from flask import Flask, jsonify, request, send_from_directory, session
+from flask import Flask, jsonify, make_response, request, send_from_directory, session
 from werkzeug.security import check_password_hash, generate_password_hash
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -55,6 +55,14 @@ def add_cors_headers(response):
 @app.before_request
 def handle_preflight():
     if request.method == "OPTIONS":
+        origin = request.headers.get("Origin")
+        if origin and origin in ALLOWED_ORIGINS:
+            resp = make_response("", 204)
+            resp.headers["Access-Control-Allow-Origin"] = origin
+            resp.headers["Access-Control-Allow-Credentials"] = "true"
+            resp.headers["Access-Control-Allow-Headers"] = "Content-Type"
+            resp.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, OPTIONS"
+            return resp
         return "", 204
 
 DATA_FILE = BASE_DIR / "data.json"

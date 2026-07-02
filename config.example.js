@@ -1,7 +1,6 @@
-// Copie en config.js et adapte si le front est sur GitHub Pages
-// et l'API sur Render (ou autre hébergeur Python).
+// Copie en config.js pour override local (optionnel).
+// Sans config.js, l'app utilise le même serveur (apiBase vide).
+// En production GitHub Pages, voir public/config.js (déployé par CI).
 window.DRC_CONFIG = {
-  // Vide = même serveur (local ou Render seul)
-  // Ex. GitHub Pages : apiBase: 'https://team-drc.onrender.com'
   apiBase: '',
 };

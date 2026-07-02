@@ -1,10 +1,5 @@
-# Déploiement Render (gratuit) — connecte le repo GitHub Klyontipe/drc
-# https://render.com → New Web Service → ce repo → auto-deploy à chaque push
-#
-# DNS OVH (Zone DNS davidramenecrepe.fr) — après avoir ajouté le domaine dans Render :
-#   @   A     216.24.57.1              (remplace 213.186.33.5)
-#   www CNAME team-drc.onrender.com.  (remplace l'A record www)
-# Ne touche pas aux MX / SPF si tu utilises la messagerie OVH du domaine.
+# API Render uniquement — le front est sur GitHub Pages
+# https://render.com → New Web Service → repo Klyontipe/drc
 services:
   - type: web
     name: team-drc
@@ -12,16 +7,15 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn -w 1 -b 0.0.0.0:$PORT --timeout 120 app:app
     healthCheckPath: /api/roulette
-    domains:
-      - davidramenecrepe.fr
-      - www.davidramenecrepe.fr
     envVars:
       - key: PYTHON_VERSION
         value: "3.13.2"
       - key: FLASK_SECRET_KEY
         generateValue: true
       - key: APP_URL
-        value: https://davidramenecrepe.fr
+        value: https://klyontipe.github.io/drc/
+      - key: ALLOWED_ORIGINS
+        value: https://klyontipe.github.io
       - key: SESSION_COOKIE_SECURE
         value: "true"
       - key: SMTP_HOST
