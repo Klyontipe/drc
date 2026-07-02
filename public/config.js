@@ -2,8 +2,8 @@
 window.DRC_CONFIG = {
   apiBase: '',
   staticMode: true,
-  basePath: '/drc',
-  appUrl: 'https://klyontipe.github.io/drc/',
+  basePath: '',
+  appUrl: 'https://davidramenecrepe.fr/',
   // EmailJS (gratuit) : https://www.emailjs.com/
   // 1. Crée un compte → Service Gmail (davidramenecrepe@gmail.com)
   // 2. Template avec variables : {{to_email}} {{subject}} {{message}} {{app_url}}
