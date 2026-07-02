@@ -9,8 +9,8 @@ window.DRC_CONFIG = {
   // 2. Template avec variables : {{to_email}} {{subject}} {{message}} {{app_url}}
   // 3. Remplis les 3 clés ci-dessous
   emailjs: {
-    publicKey: '',
-    serviceId: '',
-    templateId: '',
+    publicKey: '', // Account → API Keys → Public Key
+    serviceId: 'service_l2kg5vr',
+    templateId: '', // Email Templates → ton template → Template ID
   },
 };
