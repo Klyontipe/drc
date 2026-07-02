@@ -11,6 +11,6 @@ window.DRC_CONFIG = {
   emailjs: {
     publicKey: 'bKOXPpGauh01KAKJg',
     serviceId: 'service_l2kg5vr',
-    templateId: '', // Email Templates → ton template → Template ID
+    templateId: 'template_yev8i4n',
   },
 };
