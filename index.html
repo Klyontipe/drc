@@ -1505,7 +1505,9 @@
     <button type="button" class="sheet-logout" id="sheet-logout">Se déconnecter</button>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script src="config.js" onerror="window.DRC_CONFIG=window.DRC_CONFIG||{apiBase:''}"></script>
+  <script src="drc-client.js"></script>
   <script>
     const API_BASE = (window.DRC_CONFIG && window.DRC_CONFIG.apiBase)
       ? window.DRC_CONFIG.apiBase.replace(/\/$/, '') : '';
@@ -1516,7 +1518,10 @@
 
     function mediaUrl(path) {
       if (!path || path.startsWith('http')) return path;
-      return API_BASE + path;
+      if (API_BASE) return API_BASE + path;
+      const base = (window.DRC_CONFIG?.basePath || '').replace(/\/$/, '');
+      const p = path.startsWith('/') ? path.slice(1) : path;
+      return base ? `${base}/${p}` : p;
     }
 
     const TEAM = [
@@ -1683,6 +1688,13 @@
     }
 
     async function api(path, opts = {}) {
+      if (!API_BASE && window.DRCClient) {
+        try {
+          return await window.DRCClient.request(path, opts);
+        } catch (e) {
+          throw e.status ? e : { status: 500, error: e.message || 'Erreur' };
+        }
+      }
       const res = await fetch(apiUrl(path), {
         credentials: 'include',
         headers: { 'Content-Type': 'application/json', ...opts.headers },
