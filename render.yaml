@@ -1,0 +1,28 @@
+# Déploiement Render (gratuit) — connecte ton repo GitHub
+# https://render.com → New Web Service → ce repo
+services:
+  - type: web
+    name: team-drc
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn -w 1 -b 0.0.0.0:$PORT --timeout 120 app:app
+    healthCheckPath: /api/roulette
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.13.2"
+      - key: FLASK_SECRET_KEY
+        generateValue: true
+      - key: APP_URL
+        sync: false
+      - key: SMTP_HOST
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: DEBUG
+        value: "false"

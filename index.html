@@ -1,0 +1,2229 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Team DRC — Le Bureau des 4</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f0e17;
+      --surface: #1a1926;
+      --surface2: #242336;
+      --accent: #ff8906;
+      --accent2: #e53170;
+      --green: #2cb67d;
+      --text: #fffffe;
+      --muted: #94a1b2;
+      --jade: #ff6b6b;
+      --thibault: #4ecdc4;
+      --david: #ffe66d;
+      --lorenzo: #a78bfa;
+      --radius: 16px;
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Outfit', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(255, 137, 6, 0.18), transparent),
+        radial-gradient(ellipse 60% 40% at 100% 80%, rgba(229, 49, 112, 0.12), transparent);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .app {
+      position: relative;
+      z-index: 1;
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0.75rem 1rem calc(5.5rem + var(--safe-bottom));
+    }
+
+    body.locked .app {
+      pointer-events: none;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    /* Barre haute — compte à droite */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      gap: 0.5rem;
+    }
+
+    .rot-strip {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0.15rem;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .rot-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      overflow: hidden;
+      flex-shrink: 0;
+      opacity: 0.4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      background: var(--surface2);
+    }
+
+    .rot-icon img { width: 100%; height: 100%; object-fit: cover; }
+    .rot-icon.current { opacity: 1; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(255, 137, 6, 0.25); }
+    .rot-arrow-sm { color: var(--muted); font-size: 0.55rem; flex-shrink: 0; opacity: 0.5; }
+
+    .top-brand {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .top-brand span { color: var(--accent); }
+
+    .account-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--surface2);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 100px;
+      padding: 0.3rem 0.75rem 0.3rem 0.3rem;
+      cursor: pointer;
+      font-family: inherit;
+      color: var(--text);
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .account-btn:active { transform: scale(0.96); }
+
+    .account-btn-photo {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .account-btn-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .account-btn-name {
+      font-size: 0.8rem;
+      font-weight: 700;
+      max-width: 5.5rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* Sheet compte (mobile) */
+    .sheet-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      z-index: 200;
+    }
+
+    .sheet-backdrop.open { display: block; }
+
+    .account-sheet {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      max-width: 480px;
+      margin: 0 auto;
+      background: var(--surface);
+      border-radius: 20px 20px 0 0;
+      padding: 1rem 1.25rem calc(1.25rem + var(--safe-bottom));
+      z-index: 201;
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+    }
+
+    .account-sheet.open { transform: translateY(0); }
+
+    .sheet-handle {
+      width: 36px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      margin: 0 auto 1.25rem;
+    }
+
+    .sheet-profile {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .sheet-photo {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: var(--surface2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .sheet-photo img { width: 100%; height: 100%; object-fit: cover; }
+
+    .sheet-name { font-size: 1.25rem; font-weight: 800; }
+    .sheet-role { font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem; }
+
+    .sheet-email-box {
+      background: var(--surface2);
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .sheet-email-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 0.35rem;
+    }
+
+    .sheet-email-value {
+      font-size: 0.95rem;
+      font-weight: 600;
+      word-break: break-all;
+    }
+
+    .sheet-logout {
+      width: 100%;
+      padding: 0.85rem;
+      background: transparent;
+      border: 1px solid rgba(229, 49, 112, 0.4);
+      color: var(--accent2);
+      border-radius: 12px;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    .badge {
+      display: inline-block;
+      background: var(--surface2);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 100px;
+      padding: 0.35rem 0.9rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+
+    h1 {
+      font-size: clamp(1.75rem, 6vw, 2.25rem);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+
+    h1 span { color: var(--accent); }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-top: 0.5rem;
+    }
+
+    /* Hero card — compact */
+    .hero {
+      background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius);
+      padding: 0.85rem 1rem;
+      margin-bottom: 1rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 0.65rem;
+    }
+
+    .hero-left { flex: 1; min-width: 0; }
+
+    .hero-right {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+      flex-shrink: 0;
+    }
+
+    .hero-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      background: var(--surface2);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+    }
+
+    .hero-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+    .hero-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.2rem;
+    }
+
+    .hero-nick {
+      font-weight: 700;
+      font-size: 0.82rem;
+      color: var(--text);
+      text-align: center;
+      max-width: 72px;
+      line-height: 1.15;
+    }
+
+    .hero-date {
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .hero-food {
+      border-top: 1px solid rgba(255, 255, 255, 0.07);
+      padding-top: 0.65rem;
+      text-align: center;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+    }
+
+    .hero-food.empty {
+      color: var(--muted);
+      font-weight: 500;
+      font-size: 0.8rem;
+    }
+
+    /* Team grid */
+    .section-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .team {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.65rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .member {
+      background: var(--surface);
+      border: 2px solid transparent;
+      border-radius: var(--radius);
+      padding: 1rem;
+      transition: transform 0.2s, border-color 0.2s;
+      position: relative;
+    }
+
+    .member.active {
+      border-color: var(--accent);
+      transform: scale(1.02);
+      box-shadow: 0 0 24px rgba(255, 137, 6, 0.2);
+    }
+
+    .member.next-up {
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .member-emoji { font-size: 1.75rem; margin-bottom: 0.25rem; }
+    .member-name { font-weight: 700; font-size: 1rem; }
+    .member-role { font-size: 0.72rem; color: var(--muted); margin-top: 0.15rem; }
+
+    /* Notes plats */
+    .rating-card {
+      background: var(--surface);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .rating-info {
+      font-size: 0.9rem;
+      margin-bottom: 0.75rem;
+      line-height: 1.45;
+    }
+
+    .rating-info strong { color: var(--accent); }
+
+    .rating-btns {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .rating-btn {
+      width: 2.2rem;
+      height: 2.2rem;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: var(--surface2);
+      color: var(--text);
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    .rating-btn:active, .rating-btn.selected { background: var(--accent); color: #000; border-color: var(--accent); }
+    .rating-btn:disabled { opacity: 0.35; cursor: default; }
+
+    .rating-status {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .rating-status.done { color: var(--green); font-weight: 600; }
+
+    .rating-avg-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      margin-top: 0.75rem;
+    }
+
+    .rating-avg-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      padding: 0.45rem 0.65rem;
+      background: var(--surface2);
+      border-radius: 8px;
+    }
+
+    .rating-avg-row span:last-child { font-weight: 700; color: var(--accent); }
+
+    .avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      border: 3px solid;
+      margin-bottom: 0.5rem;
+      overflow: hidden;
+      background-size: cover;
+      background-position: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* Food roulette */
+    .food-section {
+      background: linear-gradient(160deg, #1a1926 0%, #2a1f3d 100%);
+      border: 1px solid rgba(255, 137, 6, 0.25);
+      border-radius: calc(var(--radius) + 4px);
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .food-section.rare-glow {
+      box-shadow: 0 0 40px rgba(229, 49, 112, 0.25);
+      border-color: rgba(229, 49, 112, 0.5);
+    }
+
+    .wheel-wrap {
+      position: relative;
+      width: min(280px, 85vw);
+      height: min(280px, 85vw);
+      margin: 1rem auto;
+    }
+
+    .wheel-pointer {
+      position: absolute;
+      top: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 1.5rem;
+      z-index: 3;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+    }
+
+    .wheel {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 4px solid var(--accent);
+      box-shadow: 0 0 0 6px rgba(255,137,6,0.15), inset 0 0 30px rgba(0,0,0,0.4);
+      transition: transform 4s cubic-bezier(0.15, 0.85, 0.2, 1);
+      position: relative;
+    }
+
+    .wheel-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 64px;
+      height: 64px;
+      background: var(--surface);
+      border: 3px solid var(--accent);
+      border-radius: 50%;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.75rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+
+    .wheel-label {
+      position: absolute;
+      font-size: 0.55rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+      transform-origin: center;
+      color: #fff;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+      pointer-events: none;
+    }
+
+    .food-result {
+      margin-top: 0.5rem;
+    }
+
+    .food-result-name {
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(1.4rem, 6vw, 1.9rem);
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .food-result-meta {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 0.25rem;
+    }
+
+    .rare-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--accent2), #9b59b6);
+      color: white;
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 0.2rem 0.55rem;
+      border-radius: 100px;
+      margin-left: 0.35rem;
+      vertical-align: middle;
+      animation: pulse-rare 2s infinite;
+    }
+
+    @keyframes pulse-rare {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.85; transform: scale(1.05); }
+    }
+
+    .food-locked {
+      font-size: 0.75rem;
+      color: var(--green);
+      margin-top: 0.75rem;
+      font-weight: 600;
+    }
+
+    /* Chat */
+    .chat {
+      background: var(--surface);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius);
+      margin-bottom: 1.25rem;
+      overflow: hidden;
+    }
+
+    .chat-header {
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      font-weight: 700;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .chat-free {
+      margin-left: auto;
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: var(--green);
+      background: rgba(44,182,125,0.15);
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+    }
+
+    .chat-messages {
+      height: 220px;
+      overflow-y: auto;
+      padding: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .chat-msg {
+      max-width: 85%;
+      padding: 0.55rem 0.75rem;
+      border-radius: 14px;
+      font-size: 0.85rem;
+      line-height: 1.4;
+    }
+
+    .chat-msg.mine { align-self: flex-end; background: rgba(255,137,6,0.2); border: 1px solid rgba(255,137,6,0.3); }
+    .chat-msg.other { align-self: flex-start; background: var(--surface2); }
+
+    .chat-msg-author {
+      font-size: 0.65rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      margin-bottom: 0.15rem;
+      opacity: 0.7;
+    }
+
+    .chat-msg-time { font-size: 0.6rem; opacity: 0.5; margin-top: 0.2rem; }
+
+    .chat-input-row {
+      display: flex;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .chat-input-row select {
+      background: var(--surface2);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.8rem;
+      padding: 0 0.5rem;
+      max-width: 110px;
+    }
+
+    .chat-input-row input {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: inherit;
+      padding: 0.65rem 0.85rem;
+      font-size: 0.9rem;
+    }
+
+    .chat-send {
+      background: var(--accent2);
+      border: none;
+      border-radius: 10px;
+      color: white;
+      width: 44px;
+      font-size: 1.1rem;
+      cursor: pointer;
+    }
+
+    .nav-tabs {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      display: flex;
+      gap: 0.35rem;
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0.5rem 1rem calc(0.6rem + var(--safe-bottom));
+      background: rgba(26, 25, 38, 0.95);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      overflow-x: auto;
+    }
+
+    .nav-tab {
+      flex: 1;
+      min-width: 0;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      padding: 0.55rem 0.4rem;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: pointer;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .nav-tab.active {
+      background: var(--accent);
+      color: #000;
+      border-color: var(--accent);
+    }
+
+    .panel { display: none; padding-bottom: 0.5rem; }
+    .panel.active { display: block; }
+
+    .avatar-fallback {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Écran connexion type téléphone */
+    .login-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(15, 14, 23, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      transition: opacity 0.35s, visibility 0.35s;
+    }
+
+    .login-screen.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .login-screen::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 70% 50% at 50% 0%, rgba(255, 137, 6, 0.22), transparent),
+        radial-gradient(ellipse 50% 40% at 100% 100%, rgba(167, 139, 250, 0.15), transparent);
+      pointer-events: none;
+    }
+
+    .login-inner {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 380px;
+      text-align: center;
+    }
+
+    .login-brand {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.25rem;
+    }
+
+    .login-brand span { color: var(--accent); }
+
+    .login-sub {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-bottom: 1.75rem;
+    }
+
+    .login-persons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+    }
+
+    .login-person {
+      background: var(--surface);
+      border: 2px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      padding: 1.1rem 0.75rem;
+      cursor: pointer;
+      font-family: inherit;
+      color: var(--text);
+      transition: transform 0.15s, border-color 0.2s, box-shadow 0.2s;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    .login-person * {
+      pointer-events: none;
+    }
+
+    .login-person:active { transform: scale(0.96); }
+
+    .login-person.selected {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent), 0 8px 24px rgba(255, 137, 6, 0.2);
+    }
+
+    .login-person-avatar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      font-size: 1.6rem;
+      margin: 0 auto 0.5rem;
+      border: 2px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .login-person-name {
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .pin-section {
+      transition: opacity 0.3s;
+    }
+
+    .pin-section:not(.visible) {
+      opacity: 0.45;
+    }
+
+    .pin-section.visible {
+      opacity: 1;
+    }
+
+    .pin-who {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    .pin-dots {
+      display: flex;
+      justify-content: center;
+      gap: 1.1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .pin-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.35);
+      transition: background 0.15s, border-color 0.15s, transform 0.15s;
+    }
+
+    .pin-dot.filled {
+      background: var(--accent);
+      border-color: var(--accent);
+      transform: scale(1.1);
+    }
+
+    .pin-dots.shake {
+      animation: pinShake 0.45s ease;
+    }
+
+    @keyframes pinShake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-10px); }
+      40% { transform: translateX(10px); }
+      60% { transform: translateX(-8px); }
+      80% { transform: translateX(8px); }
+    }
+
+    .pin-error {
+      min-height: 1.25rem;
+      color: var(--accent2);
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    .pin-keypad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.65rem;
+      max-width: 280px;
+      margin: 0 auto;
+    }
+
+    .pin-key {
+      aspect-ratio: 1.35;
+      border: none;
+      border-radius: 50%;
+      background: var(--surface2);
+      color: var(--text);
+      font-family: 'Space Mono', 'Outfit', monospace;
+      font-size: 1.5rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    .pin-key:active {
+      background: rgba(255, 137, 6, 0.25);
+      transform: scale(0.92);
+    }
+
+    .pin-key.empty {
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .pin-key.back {
+      font-size: 1.25rem;
+      background: transparent;
+      color: var(--muted);
+    }
+
+    .spin-btn {
+      margin-top: 1rem;
+      width: 100%;
+      padding: 1rem;
+      background: linear-gradient(135deg, var(--accent), #ff6b35);
+      color: #000;
+      border: none;
+      border-radius: 14px;
+      font-family: inherit;
+      font-weight: 800;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(255,137,6,0.35);
+      transition: transform 0.15s;
+    }
+
+    .spin-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .spin-btn:not(:disabled):active { transform: scale(0.97); }
+
+    .status-pill {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.3rem 0.65rem;
+      border-radius: 100px;
+      margin-top: 0.5rem;
+    }
+
+    .status-pill.wait { background: rgba(255,137,6,0.2); color: var(--accent); }
+    .status-pill.ready { background: rgba(44,182,125,0.2); color: var(--green); }
+    .status-pill.locked { background: rgba(148,161,178,0.15); color: var(--muted); }
+
+    .chat-msg.system {
+      align-self: center;
+      background: rgba(255,137,6,0.1);
+      border: 1px dashed rgba(255,137,6,0.3);
+      font-size: 0.8rem;
+      text-align: center;
+      max-width: 95%;
+    }
+
+    .wa-setup {
+      background: var(--surface);
+      border: 1px solid rgba(37,211,102,0.3);
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin-bottom: 1rem;
+      font-size: 0.85rem;
+      line-height: 1.55;
+    }
+
+    .wa-setup ol { margin: 0.5rem 0 0 1.1rem; color: var(--muted); }
+    .wa-setup strong { color: #25d366; }
+
+    .member-tag {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      font-size: 0.6rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 0.2rem 0.45rem;
+      border-radius: 6px;
+      letter-spacing: 0.04em;
+    }
+
+    .tag-now { background: var(--accent); color: #000; }
+    .tag-next { background: var(--surface2); color: var(--muted); }
+    .tag-last { background: rgba(255,255,255,0.08); color: var(--muted); }
+
+    .member[data-person="jade"] .member-name { color: var(--jade); }
+    .member[data-person="thibault"] .member-name { color: var(--thibault); }
+    .member[data-person="david"] .member-name { color: var(--david); }
+    .member[data-person="lorenzo"] .member-name { color: var(--lorenzo); }
+
+    /* Calendar */
+    .calendar {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .cal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .cal-month {
+      font-weight: 700;
+      font-size: 1.1rem;
+      text-transform: capitalize;
+    }
+
+    .cal-nav {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .cal-nav button {
+      background: var(--surface2);
+      border: none;
+      color: var(--text);
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+    }
+
+    .cal-nav button:active { background: var(--accent); color: #000; }
+
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      text-align: center;
+    }
+
+    .cal-dow {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--muted);
+      padding: 0.35rem 0;
+      text-transform: uppercase;
+    }
+
+    .cal-day {
+      aspect-ratio: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      position: relative;
+      min-height: 40px;
+    }
+
+    .cal-day.empty { visibility: hidden; }
+
+    .cal-day.tuesday {
+      background: rgba(255, 137, 6, 0.12);
+      color: var(--accent);
+    }
+
+    .cal-day.tuesday.assigned {
+      background: rgba(255, 137, 6, 0.25);
+      font-weight: 700;
+    }
+
+    .cal-day.today {
+      outline: 2px solid var(--accent);
+      outline-offset: -2px;
+    }
+
+    .cal-day .mini-name {
+      font-size: 0.45rem;
+      font-weight: 700;
+      line-height: 1;
+      margin-top: 2px;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      padding: 0 2px;
+    }
+
+    /* Rotation */
+    .rotation {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.25rem;
+      padding: 1rem;
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .rot-item {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 0.4rem 0.65rem;
+      border-radius: 100px;
+      background: var(--surface2);
+    }
+
+    .rot-item.current { background: var(--accent); color: #000; }
+    .rot-arrow { color: var(--muted); font-size: 0.75rem; }
+
+    /* Gages */
+    .gages {
+      margin-bottom: 1.25rem;
+    }
+
+    .gage-card {
+      background: linear-gradient(135deg, rgba(229, 49, 112, 0.15), rgba(255, 137, 6, 0.1));
+      border: 1px solid rgba(229, 49, 112, 0.3);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      position: relative;
+    }
+
+    .gage-title {
+      font-weight: 800;
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .gage-text {
+      font-size: 0.95rem;
+      line-height: 1.55;
+      color: #e2e8f0;
+    }
+
+    .gage-btn {
+      margin-top: 1rem;
+      width: 100%;
+      padding: 0.85rem;
+      background: var(--accent2);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: transform 0.15s, opacity 0.15s;
+    }
+
+    .gage-btn:active { transform: scale(0.97); opacity: 0.9; }
+
+    .gages-list {
+      margin-top: 1rem;
+    }
+
+    .gages-list details {
+      background: var(--surface);
+      border-radius: 12px;
+      margin-bottom: 0.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      overflow: hidden;
+    }
+
+    .gages-list summary {
+      padding: 0.85rem 1rem;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .gages-list summary::-webkit-details-marker { display: none; }
+
+    .gages-list summary::after {
+      content: '›';
+      margin-left: auto;
+      font-size: 1.2rem;
+      color: var(--muted);
+      transition: transform 0.2s;
+    }
+
+    .gages-list details[open] summary::after { transform: rotate(90deg); }
+
+    .gage-level {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      margin-bottom: 0.6rem;
+    }
+
+    .gage-level.l1 { background: rgba(44, 182, 125, 0.2); color: var(--green); }
+    .gage-level.l2 { background: rgba(255, 230, 109, 0.2); color: var(--david); }
+    .gage-level.l3 { background: rgba(255, 137, 6, 0.2); color: var(--accent); }
+    .gage-level.l4 { background: rgba(229, 49, 112, 0.2); color: var(--accent2); }
+    .gage-level.l5 { background: rgba(229, 49, 112, 0.35); color: #ff6b9d; border: 1px solid var(--accent2); }
+
+    .gage-warning {
+      font-size: 0.75rem;
+      color: var(--accent2);
+      margin-top: 0.75rem;
+      font-weight: 600;
+      opacity: 0.85;
+    }
+
+    .gage-detail {
+      padding: 0 1rem 0.85rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .gage-detail strong { color: var(--text); }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.75rem;
+      padding-top: 0.5rem;
+    }
+
+    @media (max-width: 360px) {
+      .team { grid-template-columns: 1fr; }
+      .cal-day .mini-name { display: none; }
+      .account-btn-name { display: none; }
+      .account-btn { padding: 0.3rem; }
+    }
+
+    @media (min-width: 481px) {
+      .app { padding-top: 2rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-screen" id="login-screen">
+    <div class="login-inner">
+      <div class="login-brand">Team <span>DRC</span></div>
+      <p class="login-sub">Entre ton code à 4 chiffres</p>
+      <div class="pin-section visible" id="pin-section">
+        <div class="pin-dots" id="pin-dots">
+          <span class="pin-dot"></span>
+          <span class="pin-dot"></span>
+          <span class="pin-dot"></span>
+          <span class="pin-dot"></span>
+        </div>
+        <p class="pin-error" id="pin-error"></p>
+        <div class="pin-keypad" id="pin-keypad">
+          <button type="button" class="pin-key" data-key="1">1</button>
+          <button type="button" class="pin-key" data-key="2">2</button>
+          <button type="button" class="pin-key" data-key="3">3</button>
+          <button type="button" class="pin-key" data-key="4">4</button>
+          <button type="button" class="pin-key" data-key="5">5</button>
+          <button type="button" class="pin-key" data-key="6">6</button>
+          <button type="button" class="pin-key" data-key="7">7</button>
+          <button type="button" class="pin-key" data-key="8">8</button>
+          <button type="button" class="pin-key" data-key="9">9</button>
+          <button type="button" class="pin-key empty"></button>
+          <button type="button" class="pin-key" data-key="0">0</button>
+          <button type="button" class="pin-key back" data-key="back">⌫</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="app">
+    <div class="top-bar">
+      <div class="top-brand">Team <span>DRC</span></div>
+      <div class="rot-strip" id="rot-strip" aria-label="Ordre du roullement"></div>
+      <button type="button" class="account-btn" id="account-btn" style="display:none" aria-label="Mon compte">
+        <div class="account-btn-photo" id="account-btn-photo"></div>
+        <span class="account-btn-name" id="account-btn-name"></span>
+      </button>
+    </div>
+
+    <header>
+      <p class="subtitle" style="margin:0">Chaque mardi, quelqu'un nourrit la team.</p>
+    </header>
+
+    <section class="hero" id="hero">
+      <div class="hero-top">
+        <div class="hero-left">
+          <div class="hero-label" id="hero-label">Cette semaine c'est…</div>
+          <div class="hero-date" id="hero-date">—</div>
+        </div>
+        <div class="hero-right">
+          <div class="hero-avatar" id="hero-avatar">👤</div>
+          <div class="hero-nick" id="hero-nick">—</div>
+        </div>
+      </div>
+      <div class="hero-food empty" id="hero-food">En attente du tirage…</div>
+    </section>
+
+    <div id="panel-home" class="panel active">
+    <p class="section-title">L'équipe</p>
+    <div class="team" id="team"></div>
+
+    <div class="rating-card" id="rating-card">
+      <p class="section-title" style="margin-bottom:0.5rem">⭐ Note le plat du mardi</p>
+      <div class="rating-info" id="rating-info">Chargement…</div>
+      <div class="rating-btns" id="rating-btns"></div>
+      <div class="rating-status" id="rating-status"></div>
+      <div class="rating-avg-list" id="rating-avg-list"></div>
+    </div>
+
+    <p class="section-title">Calendrier du mois</p>
+    <div class="calendar">
+      <div class="cal-header">
+        <span class="cal-month" id="cal-month"></span>
+        <div class="cal-nav">
+          <button id="cal-prev" aria-label="Mois précédent">‹</button>
+          <button id="cal-next" aria-label="Mois suivant">›</button>
+        </div>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+    </div>
+
+    <div id="panel-food" class="panel">
+    <section class="food-section" id="food-section">
+      <p class="section-title" style="margin-bottom:0.5rem">🎰 Roulette du plat à ramener</p>
+      <p style="font-size:0.85rem;color:var(--muted)">Reset chaque <strong>mardi à 14h</strong> · notif email auto</p>
+      <div id="food-status-pill"></div>
+
+      <div class="wheel-wrap">
+        <div class="wheel-pointer">▼</div>
+        <div class="wheel" id="food-wheel"></div>
+        <div class="wheel-center" id="wheel-center">🍽️</div>
+      </div>
+
+      <button class="spin-btn" id="spin-btn" disabled>🎰 Tirer la roulette</button>
+
+      <div class="food-result">
+        <div class="food-result-name" id="food-result-name">—</div>
+        <div class="food-result-meta" id="food-result-meta">Chargement…</div>
+        <div class="food-locked" id="food-locked"></div>
+      </div>
+    </section>
+
+    <p class="section-title">Probabilités</p>
+    <div class="rotation" id="food-odds"></div>
+    </div>
+
+    <div id="panel-gages" class="panel">
+      <p class="section-title">⚠️ Gage du jour — entre nous, sans pitié</p>
+      <div class="gage-card">
+        <div class="gage-title">🎲 Roulette de la honte</div>
+        <div id="gage-level"></div>
+        <p class="gage-text" id="gage-random">—</p>
+        <button class="gage-btn" id="gage-btn">Tirer un gage encore pire</button>
+        <p class="gage-warning">Niveau 4-5 = validé à l'unanimité par Radé, Davee, riz souflée & lolo. Pas de négociation.</p>
+      </div>
+
+      <div class="gages-list">
+        <details>
+          <summary>💀 Niveau 5 — Légendaire (tu regrettes ta vie)</summary>
+          <div class="gage-detail">
+            <strong>Double peine :</strong> tu repasses 2 fois de suite dans le roullement. Deux mardis d'affilée. Deux fois la pression.<br><br>
+            <strong>Resto au choix :</strong> les 3 autres choisissent un resto. Tu payes. Tout le monde. Boissons incluses. Pas de plafond.<br><br>
+            <strong>MasterChef maison :</strong> tu cuisines un repas complet chez l'un des 3 un dimanche. Ils notent /10 en direct. Moins de 6/10 = tu refais la semaine d'après.<br><br>
+            <strong>Esclave de la semaine :</strong> café, déjeuner à emporter, vaisselle, micro-ondes — tout pour les 3 autres pendant 5 jours ouvrés.<br><br>
+            <strong>La vidéo :</strong> tu filmes un message d'excuse de 60 sec. Les 3 choisissent si ça part sur le groupe WhatsApp commun ou pire.
+          </div>
+        </details>
+        <details>
+          <summary>🔥 Niveau 4 — Ça pique sévère</summary>
+          <div class="gage-detail">
+            <strong>Déjeuner surprise :</strong> les 3 autres commandent ton déjeuner pendant 1 semaine entière. Tu manges ce qu'ils veulent. Sans veto.<br><br>
+            <strong>Surnom officiel :</strong> ils choisissent un surnom humiliant. Tu l'acceptes en vrai, sur Slack, et en visio pendant 2 semaines.<br><br>
+            <strong>Lettres d'excuse :</strong> 3 lettres manuscrites, une par personne. Lues à voix haute autour de la table du midi. Avec émotion.<br><br>
+            <strong>Uber Eats d'urgence :</strong> le jour même, tu commandes pour les 3 autres. Minimum 20€/personne. Livraison à l'heure du déj.<br><br>
+            <strong>Fear Factor interne :</strong> les 3 composent un plat mystère. Tu finis l'assiette. Devant eux. En filmant.
+          </div>
+        </details>
+        <details>
+          <summary>😈 Niveau 3 — Entre potes, ça fait mal</summary>
+          <div class="gage-detail">
+            <strong>Afterwork complet :</strong> tu organises et tu payes le prochain afterwork des 4. Bar, bouffe, transport si besoin.<br><br>
+            <strong>Photo de profil :</strong> les 3 votent pour ta nouvelle photo Slack. Tu la gardes 1 mois. Interdiction de la changer.<br><br>
+            <strong>Serment public :</strong> message vocal de 30 sec dans le groupe : « Je suis [prénom], j'ai oublié le mardi bouffe, je mérite votre mépris. »<br><br>
+            <strong>Défi physique :</strong> les 3 choisissent un défi (pompes, planche, squats…) à faire devant eux à midi. Minimum 30 reps ou 1 min.<br><br>
+            <strong>Garde-manger perso :</strong> tu remplis le tiroir de snacks de chacun des 3 pendant 2 semaines.
+          </div>
+        </details>
+        <details>
+          <summary>💸 Niveau 2 — Ça coûte cher</summary>
+          <div class="gage-detail">
+            <strong>Mercredi suivant :</strong> tu payes le déjeuner des 3. Restaurant, pas fast-food cheap.<br><br>
+            <strong>Vendredi viennoiseries :</strong> croissants + pains au chocolat pour les 4 + ceux qui traînent autour de votre table.<br><br>
+            <strong>Cagnotte mardi bouffe :</strong> tu mets 30€ dans la cagnotte commune pour le prochain qui oublie.<br><br>
+            <strong>Courses parking :</strong> tu portes les sacs de courses de chacun du parking au bureau. Toute la semaine.
+          </div>
+        </details>
+        <details>
+          <summary>🤡 Niveau 1 — La honte douce</summary>
+          <div class="gage-detail">
+            <strong>Café de la semaine :</strong> tu fais le café des 3 chaque matin pendant 5 jours. Même le double espresso de Davee à 16h.<br><br>
+            <strong>T-shirt carton :</strong> « J'ai oublié le mardi bouffe » affiché sur ton écran toute la journée en open space.<br><br>
+            <strong>Vaisselle collective :</strong> tu ranges et laves tout ce qui traîne autour de votre coin de table pendant 3 jours.
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <footer>
+      Team DRC · Radé · Davee · riz souflée · lolo
+    </footer>
+
+    <nav class="nav-tabs">
+      <button class="nav-tab active" data-panel="panel-home">🏠<br>Accueil</button>
+      <button class="nav-tab" data-panel="panel-food">🎰<br>Plat</button>
+      <button class="nav-tab" data-panel="panel-gages">⚠️<br>Gages</button>
+    </nav>
+  </div>
+
+  <div class="sheet-backdrop" id="sheet-backdrop"></div>
+  <div class="account-sheet" id="account-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-profile">
+      <div class="sheet-photo" id="sheet-photo"></div>
+      <div>
+        <div class="sheet-name" id="sheet-name">—</div>
+        <div class="sheet-role">Team DRC</div>
+      </div>
+    </div>
+    <div class="sheet-email-box">
+      <div class="sheet-email-label">📧 Email de notif</div>
+      <div class="sheet-email-value" id="sheet-email">—</div>
+    </div>
+    <button type="button" class="sheet-logout" id="sheet-logout">Se déconnecter</button>
+  </div>
+
+  <script src="config.example.js"></script>
+  <script>
+    const API_BASE = (window.DRC_CONFIG && window.DRC_CONFIG.apiBase)
+      ? window.DRC_CONFIG.apiBase.replace(/\/$/, '') : '';
+
+    function apiUrl(path) {
+      return API_BASE + path;
+    }
+
+    function mediaUrl(path) {
+      if (!path || path.startsWith('http')) return path;
+      return API_BASE + path;
+    }
+
+    const TEAM = [
+      { id: 'jade', name: 'Jade', nickname: 'Radé' },
+      { id: 'david', name: 'David', nickname: 'Davee' },
+      { id: 'thibault', name: 'Thibault', nickname: 'riz souflée' },
+      { id: 'lorenzo', name: 'Lolo', nickname: 'lolo' },
+    ];
+
+    let avatars = {};
+    let allFoods = [];
+    let currentUser = null;
+    let pinBuffer = '';
+    let rouletteStatus = null;
+    let ratingStatus = null;
+    let wheelSpun = false;
+
+    const ANCHOR_DATE = new Date(2026, 5, 23);
+    const ANCHOR_INDEX = 3;
+
+    const GAGES = [
+      { level: 1, text: "Café des 3 chaque matin pendant 5 jours. Thibault a le droit de râler, tu as le droit de rien." },
+      { level: 1, text: "Afficher « Bolo officiel du mardi » sur ton écran toute la journée. Les 3 peuvent prendre en photo." },
+      { level: 1, text: "Laver la vaisselle de Jade, Thibault et David pendant 3 jours. Oui, même la tasse de lundi." },
+      { level: 2, text: "Payer le déjeuner des 3 le mercredi suivant. Restaurant, pas un sandwich triangle." },
+      { level: 2, text: "Croissants pour les 4 + invités de la table le vendredi. Minimum 2 par tête." },
+      { level: 2, text: "30€ dans la cagnotte Team DRC + un mot d'excuse affiché dessus." },
+      { level: 2, text: "Porter les courses de chacun du parking au bureau toute la semaine. Même les packs d'eau." },
+      { level: 3, text: "Organiser et payer l'afterwork des 4. Bar, bouffe, et tu gères la résa." },
+      { level: 3, text: "Les 3 votent ta photo Slack. Tu la gardes 1 mois. Même en visio client." },
+      { level: 3, text: "Vocal dans le groupe : « Je suis [prénom], j'ai oublié le mardi Team DRC, je mérite votre mépris. » 30 secondes min." },
+      { level: 3, text: "Défi physique choisi par les 3 à midi devant eux : 30 pompes, 1 min de planche ou équivalent." },
+      { level: 3, text: "Remplir le tiroir snacks de Jade, Thibault et Lolo pendant 2 semaines. Leur choix, ton portefeuille." },
+      { level: 3, text: "Répondre « Oui chef » à tout ce que disent les 3 pendant une journée entière. Sans ironie." },
+      { level: 4, text: "Les 3 commandent ton déjeuner pendant 1 semaine. Tu manges. Tu fermes ta bouche. Tu payes pas." },
+      { level: 4, text: "Surnom humiliant choisi par les 3 : en vrai, Slack et visio pendant 2 semaines. Zéro négociation." },
+      { level: 4, text: "3 lettres manuscrites d'excuse, lues à voix haute autour de la table. Une par victime." },
+      { level: 4, text: "Uber Eats le jour même pour les 3 : min 20€/personne, livré à l'heure du déj. Tu attends debout." },
+      { level: 4, text: "Fear Factor : les 3 composent un plat mystère. Tu finis l'assiette devant eux. Filmé pour preuve." },
+      { level: 4, text: "Tu sers à table le mardi suivant : tu dresses, tu verses, tu ranges. Comme un serveur. En silence." },
+      { level: 4, text: "PowerPoint de 10 slides « Pourquoi j'ai fail le mardi Team DRC » présenté aux 3 autour d'un café. Questions obligatoires." },
+      { level: 5, text: "DOUBLE PEINE : tu repasses 2 fois de suite dans le roullement. Deux mardis. Deux angoisses." },
+      { level: 5, text: "Resto au choix des 3 : tu payes tout le monde, boissons incluses. Pas de plafond. Pas de « je ramène juste l'apéro »." },
+      { level: 5, text: "MasterChef maison : tu cuisines un repas complet chez l'un des 3 un dimanche. Noté /10. Moins de 6 = tu recommences." },
+      { level: 5, text: "Esclave 5 jours : café, déj à emporter, vaisselle, micro-ondes pour Jade, Thibault et David. Lolo supervise." },
+      { level: 5, text: "Vidéo d'excuse 60 sec filmée par les 3. Ils décident si ça reste privé ou si ça circule. Tu signes un waiver verbal." },
+      { level: 5, text: "Tu finances 2 afterworks d'affilée pour les 4. Deux semaines. Deux fois la douleur." },
+      { level: 5, text: "Semaine inversée : les 3 te choisissent TOUT — tenue du mardi, plat de la veille à préparer, heure de réveil pour le café." },
+      { level: 5, text: "Tu cuisines les 3 prochains mardis bouffe à la place de celui qui devait le faire. Trois semaines. Trois plats. Zéro excuse." },
+    ];
+
+    const LEVEL_LABELS = {
+      1: { name: 'Niveau 1 — Honte douce', fires: '🔥' },
+      2: { name: 'Niveau 2 — Ça coûte', fires: '🔥🔥' },
+      3: { name: 'Niveau 3 — Entre nous ça pique', fires: '🔥🔥🔥' },
+      4: { name: 'Niveau 4 — Sévère', fires: '🔥🔥🔥🔥' },
+      5: { name: 'Niveau 5 — LÉGENDAIRE', fires: '🔥🔥🔥🔥🔥' },
+    };
+
+    let viewMonth = new Date().getMonth();
+    let viewYear = new Date().getFullYear();
+
+    function getTuesdayIndex(date) {
+      const d = new Date(date);
+      d.setHours(12, 0, 0, 0);
+      const anchor = new Date(ANCHOR_DATE);
+      anchor.setHours(12, 0, 0, 0);
+      const diffMs = d - anchor;
+      const diffWeeks = Math.round(diffMs / (7 * 24 * 60 * 60 * 1000));
+      const idx = ((ANCHOR_INDEX + diffWeeks) % TEAM.length + TEAM.length) % TEAM.length;
+      return idx;
+    }
+
+    function getNextTuesday(from = new Date()) {
+      const d = new Date(from);
+      d.setHours(12, 0, 0, 0);
+      if (d.getDay() === 2) return d;
+      const day = d.getDay();
+      const daysUntil = day < 2 ? 2 - day : 9 - day;
+      const next = new Date(d);
+      next.setDate(d.getDate() + daysUntil);
+      return next;
+    }
+
+    function getLastTuesday(from = new Date()) {
+      const d = new Date(from);
+      d.setHours(12, 0, 0, 0);
+      const day = d.getDay();
+      const daysBack = day === 2 ? 7 : day >= 2 ? day - 2 : day + 5;
+      const last = new Date(d);
+      last.setDate(d.getDate() - daysBack);
+      return last;
+    }
+
+    function formatDate(date) {
+      return date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+    }
+
+    function shortName(name) {
+      return name.split(' ')[0];
+    }
+
+    function nick(id) {
+      const p = TEAM.find(t => t.id === id);
+      return p ? p.nickname : id;
+    }
+
+    function shortNick(name) {
+      return name.split(' ')[0];
+    }
+
+    function getPerson(id) {
+      return TEAM.find(p => p.id === id);
+    }
+
+    function setPhotoEl(el, photo, emoji) {
+      if (photo) {
+        el.innerHTML = `<img src="${photo}" alt="" onerror="this.remove();this.parentElement.textContent='${emoji}'">`;
+      } else {
+        el.textContent = emoji;
+      }
+    }
+
+    async function loadAvatars() {
+      try {
+        avatars = await api('/api/avatars');
+        for (const id of Object.keys(avatars)) {
+          if (avatars[id].photo) avatars[id].photo = mediaUrl(avatars[id].photo);
+        }
+      } catch {
+        avatars = {};
+      }
+    }
+
+    function openAccountSheet() {
+      if (!currentUser) return;
+      document.getElementById('sheet-name').textContent = currentUser.nickname || nick(currentUser.user_id);
+      document.getElementById('sheet-email').textContent = currentUser.user_email || '—';
+      setPhotoEl(
+        document.getElementById('sheet-photo'),
+        mediaUrl(currentUser.photo),
+        currentUser.emoji || getAvatar(currentUser.user_id).emoji
+      );
+      document.getElementById('sheet-backdrop').classList.add('open');
+      document.getElementById('account-sheet').classList.add('open');
+    }
+
+    function closeAccountSheet() {
+      document.getElementById('sheet-backdrop').classList.remove('open');
+      document.getElementById('account-sheet').classList.remove('open');
+    }
+
+    function getAvatar(id) {
+      return avatars[id] || { emoji: '👤', bg: '#555', bg2: '#333', border: '#888', role: '', photo: null };
+    }
+
+    function avatarHtml(id, size) {
+      const a = getAvatar(id);
+      const style = `background: linear-gradient(135deg, ${a.bg}, ${a.bg2}); border-color: ${a.border};`;
+      if (a.photo) {
+        return `<div class="avatar" style="${style}"><img src="${a.photo}" alt=""></div>`;
+      }
+      return `<div class="avatar" style="${style}">${a.emoji}</div>`;
+    }
+
+    async function api(path, opts = {}) {
+      const res = await fetch(apiUrl(path), {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', ...opts.headers },
+        ...opts,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw { status: res.status, ...data };
+      return data;
+    }
+
+    async function loadAuth() {
+      try {
+        const me = await api('/api/auth/me');
+        currentUser = me.logged_in ? me : null;
+        updateAuthUI(me);
+        return me;
+      } catch {
+        currentUser = null;
+        updateAuthUI({ logged_in: false });
+      }
+    }
+
+    function initLoginEvents() {
+      document.getElementById('pin-keypad').addEventListener('click', e => {
+        const btn = e.target.closest('.pin-key[data-key]');
+        if (btn) pinKey(btn.dataset.key);
+      });
+    }
+
+    function updatePinDots() {
+      document.querySelectorAll('.pin-dot').forEach((dot, i) => {
+        dot.classList.toggle('filled', i < pinBuffer.length);
+      });
+    }
+
+    function pinKey(key) {
+      document.getElementById('pin-error').textContent = '';
+      if (key === 'back') {
+        pinBuffer = pinBuffer.slice(0, -1);
+      } else if (pinBuffer.length < 4) {
+        pinBuffer += key;
+      }
+      updatePinDots();
+      if (pinBuffer.length === 4) tryPinLogin();
+    }
+
+    async function refreshApp() {
+      renderHero();
+      renderTeam();
+      renderRotStrip();
+      renderCalendar();
+      await loadFood();
+      await loadRatings();
+    }
+
+    async function tryPinLogin() {
+      const pin = pinBuffer;
+      try {
+        await api('/api/auth/login', {
+          method: 'POST',
+          body: JSON.stringify({ pin }),
+        });
+        pinBuffer = '';
+        updatePinDots();
+        await loadAuth();
+        await refreshApp();
+      } catch (e) {
+        const dots = document.getElementById('pin-dots');
+        dots.classList.add('shake');
+        setTimeout(() => dots.classList.remove('shake'), 450);
+        pinBuffer = '';
+        updatePinDots();
+        document.getElementById('pin-error').textContent = e.error || 'Code incorrect';
+      }
+    }
+
+    function showLoginScreen() {
+      pinBuffer = '';
+      document.body.classList.add('locked');
+      document.getElementById('pin-error').textContent = '';
+      updatePinDots();
+      document.getElementById('login-screen').classList.remove('hidden');
+    }
+
+    function hideLoginScreen() {
+      document.body.classList.remove('locked');
+      document.getElementById('login-screen').classList.add('hidden');
+    }
+
+    function updateAuthUI(me) {
+      const accountBtn = document.getElementById('account-btn');
+      const accountPhoto = document.getElementById('account-btn-photo');
+      const accountName = document.getElementById('account-btn-name');
+
+      if (me.logged_in) {
+        accountBtn.style.display = 'flex';
+        accountName.textContent = me.nickname || nick(me.user_id);
+        setPhotoEl(accountPhoto, mediaUrl(me.photo), me.emoji || getAvatar(me.user_id).emoji);
+        hideLoginScreen();
+      } else {
+        accountBtn.style.display = 'none';
+        closeAccountSheet();
+        showLoginScreen();
+      }
+    }
+
+    function renderHero() {
+      const today = new Date();
+      const nextTue = getNextTuesday(today);
+      const isTuesday = today.getDay() === 2;
+
+      let responsible, label, targetDate, food = null;
+
+      if (rouletteStatus?.is_spun && rouletteStatus.draw?.food) {
+        targetDate = new Date(rouletteStatus.target_tuesday + 'T12:00:00');
+        responsible = TEAM[getTuesdayIndex(targetDate)];
+        food = rouletteStatus.draw.food;
+        label = isTuesday && targetDate.toDateString() === today.toDateString()
+          ? "Aujourd'hui c'est"
+          : 'Prochain mardi';
+      } else if (isTuesday) {
+        responsible = TEAM[getTuesdayIndex(today)];
+        label = "Aujourd'hui c'est";
+        targetDate = today;
+      } else {
+        responsible = TEAM[getTuesdayIndex(nextTue)];
+        label = 'Prochain mardi';
+        targetDate = nextTue;
+      }
+
+      const av = getAvatar(responsible.id);
+      const avatarEl = document.getElementById('hero-avatar');
+      if (av.photo) {
+        avatarEl.innerHTML = `<img src="${av.photo}" alt="${responsible.nickname}">`;
+      } else {
+        avatarEl.textContent = av.emoji;
+        avatarEl.style.background = `linear-gradient(135deg,${av.bg},${av.bg2})`;
+      }
+
+      document.getElementById('hero-label').textContent = label;
+      document.getElementById('hero-nick').textContent = responsible.nickname;
+      document.getElementById('hero-date').textContent = formatDate(targetDate);
+
+      const foodEl = document.getElementById('hero-food');
+      if (food) {
+        foodEl.className = 'hero-food';
+        foodEl.innerHTML = `<span>${food.emoji}</span><span>${food.name}</span>`;
+      } else {
+        foodEl.className = 'hero-food empty';
+        foodEl.textContent = 'En attente du tirage…';
+      }
+    }
+
+    function renderTeam() {
+      const today = new Date();
+      const nextTue = getNextTuesday(today);
+      const lastTue = getLastTuesday(today);
+      const currentIdx = today.getDay() === 2 ? getTuesdayIndex(today) : getTuesdayIndex(nextTue);
+      const nextIdx = (currentIdx + 1) % TEAM.length;
+      const lastIdx = getTuesdayIndex(lastTue);
+
+      document.getElementById('team').innerHTML = TEAM.map((p, i) => {
+        const av = getAvatar(p.id);
+        let tag = '', cls = 'member';
+        if (i === currentIdx) { tag = '<span class="member-tag tag-now">C\'est lui</span>'; cls += ' active'; }
+        else if (i === nextIdx) { tag = '<span class="member-tag tag-next">Après</span>'; cls += ' next-up'; }
+        else if (i === lastIdx) { tag = '<span class="member-tag tag-last">Dernier</span>'; }
+
+        const avStyle = `background:linear-gradient(135deg,${av.bg},${av.bg2});border-color:${av.border};`;
+        const avContent = av.photo
+          ? `<div class="avatar" style="${avStyle}"><img src="${av.photo}" alt=""></div>`
+          : `<div class="avatar" style="${avStyle}">${av.emoji}</div>`;
+
+        return `
+          <div class="${cls}" data-person="${p.id}">
+            ${tag}
+            ${avContent}
+            <div class="member-name" style="color:${av.bg}">${p.nickname}</div>
+            <div class="member-role">${av.role || ''}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderRotStrip() {
+      const today = new Date();
+      const currentIdx = today.getDay() === 2 ? getTuesdayIndex(today) : getTuesdayIndex(getNextTuesday(today));
+
+      document.getElementById('rot-strip').innerHTML = TEAM.map((p, i) => {
+        const av = getAvatar(p.id);
+        const cls = i === currentIdx ? 'rot-icon current' : 'rot-icon';
+        const avStyle = `background:linear-gradient(135deg,${av.bg},${av.bg2});border-color:${av.border};`;
+        const icon = av.photo
+          ? `<span class="${cls}" style="${avStyle}"><img src="${av.photo}" alt="${p.nickname}"></span>`
+          : `<span class="${cls}" style="${avStyle}">${av.emoji}</span>`;
+        const arrow = i < TEAM.length - 1 ? '<span class="rot-arrow-sm">›</span>' : '';
+        return icon + arrow;
+      }).join('');
+    }
+
+    function renderCalendar() {
+      const monthNames = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+      const dow = ['lu','ma','me','je','ve','sa','di'];
+
+      document.getElementById('cal-month').textContent = monthNames[viewMonth] + ' ' + viewYear;
+
+      const firstDay = new Date(viewYear, viewMonth, 1);
+      const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+      let startDow = firstDay.getDay() - 1;
+      if (startDow < 0) startDow = 6;
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      let html = dow.map(d => `<div class="cal-dow">${d}</div>`).join('');
+
+      for (let i = 0; i < startDow; i++) {
+        html += '<div class="cal-day empty"></div>';
+      }
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(viewYear, viewMonth, day);
+        const isTue = date.getDay() === 2;
+        const isToday = date.getTime() === today.getTime();
+        let cls = 'cal-day';
+        if (isTue) cls += ' tuesday assigned';
+        if (isToday) cls += ' today';
+
+        let mini = '';
+        if (isTue) {
+          const person = TEAM[getTuesdayIndex(date)];
+          mini = `<span class="mini-name">${shortNick(person.nickname)}</span>`;
+        }
+
+        html += `<div class="${cls}">${day}${mini}</div>`;
+      }
+
+      document.getElementById('cal-grid').innerHTML = html;
+    }
+
+    function randomGage() {
+      const gage = GAGES[Math.floor(Math.random() * GAGES.length)];
+      const info = LEVEL_LABELS[gage.level];
+      document.getElementById('gage-level').innerHTML =
+        `<span class="gage-level l${gage.level}">${info.fires} ${info.name}</span>`;
+      document.getElementById('gage-random').textContent = gage.text;
+    }
+
+    // --- Food roulette ---
+    const WHEEL_COLORS = ['#ff6b6b','#4ecdc4','#ffe66d','#a78bfa','#ff8906','#e53170','#2cb67d','#339af0','#f06595','#51cf66','#fcc419'];
+
+    function buildWheel(foods) {
+      const wheel = document.getElementById('food-wheel');
+      const n = foods.length;
+      const slice = 360 / n;
+      let gradient = 'conic-gradient(';
+      foods.forEach((f, i) => {
+        const c = WHEEL_COLORS[i % WHEEL_COLORS.length];
+        gradient += `${c} ${i * slice}deg ${(i + 1) * slice}deg${i < n - 1 ? ',' : ''}`;
+      });
+      gradient += ')';
+      wheel.style.background = gradient;
+      wheel.innerHTML = '';
+      foods.forEach((f, i) => {
+        const angle = i * slice + slice / 2 - 90;
+        const rad = angle * Math.PI / 180;
+        const r = 38;
+        const x = 50 + r * Math.cos(rad);
+        const y = 50 + r * Math.sin(rad);
+        const lbl = document.createElement('span');
+        lbl.className = 'wheel-label';
+        lbl.textContent = f.emoji + ' ' + f.name.split(' ')[0];
+        lbl.style.left = x + '%';
+        lbl.style.top = y + '%';
+        lbl.style.transform = `translate(-50%,-50%) rotate(${angle + 90}deg)`;
+        wheel.appendChild(lbl);
+      });
+    }
+
+    function spinWheelToFood(foodId, animate) {
+      const idx = allFoods.findIndex(f => f.id === foodId);
+      if (idx < 0) return;
+      const slice = 360 / allFoods.length;
+      const spins = animate ? 5 : 0;
+      const target = spins * 360 + (360 - idx * slice - slice / 2);
+      const wheel = document.getElementById('food-wheel');
+      wheel.style.transform = `rotate(${target}deg)`;
+    }
+
+    function renderFoodOdds() {
+      document.getElementById('food-odds').innerHTML = allFoods.map(f =>
+        `<span class="rot-item" style="${f.rare ? 'border:1px solid var(--accent2)' : ''}">${f.emoji} ${f.name}${f.rare ? ' ✨' : ''}</span>`
+      ).join('');
+    }
+
+    async function loadFood() {
+      try {
+        rouletteStatus = await api('/api/roulette');
+      } catch {
+        return;
+      }
+      allFoods = rouletteStatus.all_foods;
+      if (document.getElementById('panel-food').classList.contains('active')) {
+        buildWheel(allFoods);
+      }
+      renderFoodOdds();
+
+      const status = rouletteStatus;
+      const target = new Date(status.target_tuesday + 'T12:00:00');
+      const spinBtn = document.getElementById('spin-btn');
+      const pill = document.getElementById('food-status-pill');
+
+      if (status.is_spun) {
+        const spinner = nick(status.draw.spun_by) || status.draw.spun_by_name;
+        pill.innerHTML = `<span class="status-pill locked">🔒 Tiré par ${spinner}</span>`;
+        spinBtn.disabled = true;
+        spinBtn.textContent = '✅ Déjà tiré ce mardi';
+      } else if (!currentUser) {
+        pill.innerHTML = `<span class="status-pill wait">🔐 Connecte-toi pour tirer</span>`;
+        spinBtn.disabled = true;
+        spinBtn.textContent = '🔐 Se connecter';
+      } else if (status.can_spin) {
+        pill.innerHTML = `<span class="status-pill ready">🎰 À tirer par ${status.responsible_name}</span>`;
+        const canSpin = currentUser.user_id === status.responsible;
+        spinBtn.disabled = !canSpin;
+        spinBtn.textContent = canSpin
+          ? '🎰 Tire la roulette !'
+          : `🎰 ${status.responsible_name} doit tirer`;
+      } else {
+        const reset = new Date(status.next_reset);
+        pill.innerHTML = `<span class="status-pill wait">⏳ Prochain tirage après le ${reset.toLocaleDateString('fr-FR')}</span>`;
+        spinBtn.disabled = true;
+        spinBtn.textContent = '🔒 Roulette fermée';
+      }
+
+      if (status.is_spun && status.draw) {
+        const food = status.draw.food;
+        const spinner = nick(status.draw.spun_by) || status.draw.spun_by_name;
+        document.getElementById('food-result-name').innerHTML =
+          `${food.emoji} ${food.name}${food.rare ? '<span class="rare-badge">RARE</span>' : ''}`;
+        document.getElementById('food-result-meta').textContent =
+          `${spinner} ramène ça le ${formatDate(target)}`;
+        document.getElementById('wheel-center').textContent = food.emoji;
+        document.getElementById('food-section').classList.toggle('rare-glow', food.rare);
+        spinWheelToFood(food.id, false);
+
+        const nextReset = new Date(status.next_reset);
+        document.getElementById('food-locked').innerHTML =
+          `🔒 Fixe jusqu'au prochain mardi 14h (${nextReset.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })} à 14h)`;
+      } else {
+        document.getElementById('food-result-name').textContent = 'En attente du tirage…';
+        document.getElementById('food-result-meta').textContent =
+          `${status.responsible_name} doit tirer pour le ${formatDate(target)}`;
+        document.getElementById('wheel-center').textContent = '❓';
+        document.getElementById('food-section').classList.remove('rare-glow');
+        document.getElementById('food-locked').textContent =
+          !currentUser ? '🔐 Connecte-toi pour tirer la roulette'
+          : status.can_spin ? '👆 Appuie sur le bouton pour tirer !' : 'En attente du mardi 14h';
+      }
+      renderHero();
+    }
+
+    async function loadRatings() {
+      try {
+        ratingStatus = await api('/api/ratings');
+      } catch {
+        return;
+      }
+      renderRatings();
+    }
+
+    function renderRatings() {
+      const info = document.getElementById('rating-info');
+      const btns = document.getElementById('rating-btns');
+      const statusEl = document.getElementById('rating-status');
+      const avgList = document.getElementById('rating-avg-list');
+
+      if (!ratingStatus?.active) {
+        if (ratingStatus?.pending) {
+          const p = ratingStatus.preview;
+          const opens = new Date(ratingStatus.opens_at);
+          info.innerHTML = p?.food
+            ? `<strong>${p.food.emoji} ${p.food.name}</strong> par <strong>${p.baker}</strong>`
+            : 'En attente du tirage pour noter le plat';
+          btns.innerHTML = '';
+          statusEl.textContent = `🔒 Votes ouverts mardi à 9h (${opens.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })})`;
+        } else {
+          info.textContent = 'Les votes s\'ouvrent le mardi matin à 9h, après le tirage.';
+          btns.innerHTML = '';
+          statusEl.textContent = '';
+        }
+        avgList.innerHTML = renderFoodAverages(ratingStatus?.food_averages || {});
+        return;
+      }
+
+      const s = ratingStatus.session;
+      const food = s.food;
+      info.innerHTML = `<strong>${food.emoji} ${food.name}</strong> par <strong>${s.baker_name}</strong>`;
+
+      if (s.completed) {
+        btns.innerHTML = '';
+        statusEl.className = 'rating-status done';
+        statusEl.textContent = `✅ Moyenne : ${s.average}/10 · email envoyé à tous`;
+      } else if (ratingStatus.is_baker) {
+        btns.innerHTML = '';
+        statusEl.textContent = `🍳 C'est ton plat — tu ne votes pas (${s.votes_count}/${s.votes_total} votes)`;
+      } else if (ratingStatus.has_voted) {
+        btns.innerHTML = '';
+        statusEl.textContent = `✅ Vote enregistré · ${s.votes_count}/${s.votes_total} votes`;
+      } else if (ratingStatus.can_vote) {
+        btns.innerHTML = Array.from({ length: 10 }, (_, i) => i + 1)
+          .map(n => `<button type="button" class="rating-btn" data-score="${n}">${n}</button>`)
+          .join('');
+        btns.querySelectorAll('.rating-btn').forEach(btn => {
+          btn.addEventListener('click', () => submitVote(+btn.dataset.score));
+        });
+        statusEl.textContent = `Ton avis sur le plat ? (${s.votes_count}/${s.votes_total})`;
+      } else if (!currentUser) {
+        btns.innerHTML = '';
+        statusEl.textContent = '🔐 Connecte-toi pour voter';
+      } else {
+        btns.innerHTML = '';
+        statusEl.textContent = `${s.votes_count}/${s.votes_total} votes en attente`;
+      }
+
+      avgList.innerHTML = renderFoodAverages(ratingStatus.food_averages || {});
+    }
+
+    function renderFoodAverages(avgs) {
+      const entries = Object.values(avgs).filter(a => a.sessions > 0);
+      if (!entries.length) return '<p class="rating-status">Moyennes des plats — pas encore de notes</p>';
+      return '<p class="section-title" style="margin:0.75rem 0 0.4rem">📊 Moyennes plats</p>' +
+        entries.sort((a, b) => (b.average || 0) - (a.average || 0))
+          .map(a => `<div class="rating-avg-row"><span>${a.emoji} ${a.name}</span><span>${a.average}/10 <small style="opacity:0.6">(${a.sessions}×)</small></span></div>`)
+          .join('');
+    }
+
+    async function submitVote(score) {
+      try {
+        ratingStatus = await api('/api/ratings/vote', {
+          method: 'POST',
+          body: JSON.stringify({ score }),
+        });
+        renderRatings();
+        if (ratingStatus.session?.completed) {
+          alert(`⭐ Moyenne : ${ratingStatus.session.average}/10 — email envoyé !`);
+        }
+      } catch (e) {
+        alert(e.error || 'Vote impossible');
+      }
+    }
+
+    async function spinRoulette() {
+      if (!currentUser) {
+        showLoginScreen();
+        return;
+      }
+      const btn = document.getElementById('spin-btn');
+      btn.disabled = true;
+      btn.textContent = '🎰 Ça tourne…';
+      try {
+        const result = await api('/api/roulette/spin', {
+          method: 'POST',
+          body: '{}',
+        });
+        wheelSpun = true;
+        const food = result.draw.food;
+        spinWheelToFood(food.id, true);
+        const emailOk = (result.email_results || []).filter(r => r.ok).length;
+        const emailTotal = (result.email_results || []).length;
+        if (emailTotal) {
+          setTimeout(() => {
+            alert(emailOk > 0
+              ? `📧 Email envoyé à ${emailOk}/${emailTotal} adresse(s) !`
+              : '⚠️ Tirage OK mais email non envoyé');
+          }, 4300);
+        }
+        setTimeout(async () => {
+          await loadFood();
+          await loadRatings();
+          renderHero();
+        }, 4200);
+      } catch (e) {
+        if (e.status === 401) showLoginScreen();
+        else alert(e.error || 'Impossible de tirer');
+        await loadFood();
+      }
+    }
+
+    // --- Tabs ---
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.panel).classList.add('active');
+        if (tab.dataset.panel === 'panel-food') {
+          requestAnimationFrame(() => {
+            if (allFoods.length) buildWheel(allFoods);
+            loadFood();
+          });
+        }
+      });
+    });
+
+    document.getElementById('account-btn').addEventListener('click', openAccountSheet);
+    document.getElementById('sheet-backdrop').addEventListener('click', closeAccountSheet);
+    document.getElementById('sheet-logout').addEventListener('click', async () => {
+      await api('/api/auth/logout', { method: 'POST' });
+      currentUser = null;
+      closeAccountSheet();
+      await loadAuth();
+      await refreshApp();
+    });
+    document.getElementById('spin-btn').addEventListener('click', spinRoulette);
+
+    document.getElementById('cal-prev').addEventListener('click', () => {
+      viewMonth--;
+      if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+      renderCalendar();
+    });
+
+    document.getElementById('cal-next').addEventListener('click', () => {
+      viewMonth++;
+      if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+      renderCalendar();
+    });
+
+    document.getElementById('gage-btn').addEventListener('click', randomGage);
+
+    async function init() {
+      initLoginEvents();
+      await loadAvatars();
+      await loadAuth();
+      await refreshApp();
+      randomGage();
+      setInterval(loadFood, 30000);
+      setInterval(loadRatings, 30000);
+    }
+
+    init();
+  </script>
+</body>
+</html>
